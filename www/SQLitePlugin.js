@@ -307,9 +307,6 @@
         }
     };
 
-    var outstandingDatabases = {},
-        availableDatabases = {};
-
     window.openDatabase = function (name, requestedVersion, displayName, maxSize, successCallback, errorCallback) {
         if (typeof(successCallback) != 'function' || typeof(errorCallback) != 'function') {
             throw new Error('Open database is asynchronous and requires both a success and error callback functions.');
@@ -323,14 +320,6 @@
 
         if (!VersionFormat.isValid(requestedVersion)) {
             throw new Error('Invalid version format for ' + requestedVersion);
-        }
-
-        if (displayName == null || displayName == undefined) { // todo: change this to not allow specifying displayName!
-            throw new Error('DisplayName must be specified. For no requestedVersion, use an empty string');
-        }
-
-        if (typeof(maxSize) != 'number') {
-            throw new Error('Max size must be specified.'); // todo: change this to not allow specifying size!
         }
 
         if (Database.availableDatabases[name]) {

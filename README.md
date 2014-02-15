@@ -80,7 +80,7 @@ cordvova plugins add Cordova-SQLitePlugin-WP
 
 ## Usage
 
-Working examples for both a manual constrcted and cli based projects are available at [Cordova-SQLitePlugin-WP-Examples](https://github.com/welldone-software/Cordova-SQLitePlugin-WP-Examples){:target="_blank"}.
+Working examples for both a manual constrcted and cli based projects are available at [Cordova-SQLitePlugin-WP-Examples](https://github.com/welldone-software/Cordova-SQLitePlugin-WP-Examples).
 
 Once the plugin is installed, the following jasmine 2.0 test should succeed:
 
