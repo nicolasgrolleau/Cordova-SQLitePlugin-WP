@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<plugin xmlns="http://cordova.apache.org/ns/plugins/1.0"
+    id="welldonesoftware.sqllite.wp8"
+    version="1.0.0">
+  <engines>
+    <engine name="cordova" version=">=3.0.0" />
+  </engines>
+
+  <name>WP8+ SQLite Web SQL polyfill Plugin</name>
+
+  <description>An SQLite based HTML Web SQL polyfill for WP8+</description>
+
+  <js-module src="www/SQLitePlugin.js" name="SQLitePlugin">
+      <clobbers target="SQLitePlugin" />
+  </js-module>
+
+  <platform name="wp8">
+
+        <config-file target="config.xml" parent="/*">
+            <feature name="SQLitePlugin">
+                <param name="wp-package" value="SQLitePlugin"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/wp/SQLite.cs" />
+        <source-file src="src/wp/SQLitePlugin.cs" />
+
+    </platform>
+
+</plugin>

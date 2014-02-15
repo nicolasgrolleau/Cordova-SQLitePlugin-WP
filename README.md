@@ -71,11 +71,19 @@ cordvova plugins add Cordova-SQLitePlugin-WP
 1. Add the below xml fragment to your `config.xml` file
 
 ```xml
+<<<<<<< HEAD
+=======
+
+>>>>>>> b712050634d33dbeb4d75f5dd48a97917961b4c7
 	<config-file target="config.xml" parent="/*">
 	    <feature name="SQLitePlugin">
 	        <param name="wp-package" value="SQLitePlugin"/>
 	    </feature>
 	</config-file>
+<<<<<<< HEAD
+=======
+
+>>>>>>> b712050634d33dbeb4d75f5dd48a97917961b4c7
 ```
 
 ## Usage
@@ -85,6 +93,10 @@ Working examples for both a manual constrcted and cli based projects are availab
 Once the plugin is installed, the following jasmine 2.0 test should succeed:
 
 ```js
+<<<<<<< HEAD
+=======
+
+>>>>>>> b712050634d33dbeb4d75f5dd48a97917961b4c7
 it('sould allow crud and database managment scripts', function (done) {
     window.openDatabase('name', '1.0', 'desc', 1024 * 1024 * 5, function (db) {
         db.transaction(
@@ -108,4 +120,8 @@ it('sould allow crud and database managment scripts', function (done) {
     });
 });
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> b712050634d33dbeb4d75f5dd48a97917961b4c7
 ```
