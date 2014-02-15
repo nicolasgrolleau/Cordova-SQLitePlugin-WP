@@ -22,8 +22,8 @@
             </feature>
         </config-file>
 
-        <source-file src="src/wp/SQLite.cs" />
-        <source-file src="src/wp/SQLitePlugin.cs" />
+        <source-file src="src/wp8/SQLite.cs" />
+        <source-file src="src/wp8/SQLitePlugin.cs" />
 
     </platform>
 
