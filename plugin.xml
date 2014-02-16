@@ -22,7 +22,10 @@
             </feature>
         </config-file>
 
-        <source-file src="src/wp8/SQLite.cs" />
+        <source-file src="src/wp8/Newtonsoft.Json.dll" />
+        <source-file src="src/wp8/Community.CsharpSqlite.WinPhone.dll" />
+
+        <source-file src="src/wp8/SQLitePlugin.cs" />
         <source-file src="src/wp8/SQLitePlugin.cs" />
 
     </platform>
