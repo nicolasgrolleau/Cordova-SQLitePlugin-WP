@@ -26,7 +26,7 @@
         <source-file src="src/wp8/Community.CsharpSqlite.WinPhone.dll" />
 
         <source-file src="src/wp8/SQLitePlugin.cs" />
-        <source-file src="src/wp8/SQLitePlugin.cs" />
+        <source-file src="src/wp8/SQLite.cs" />
 
     </platform>
 
