@@ -1,8 +1,8 @@
 # Cordova-SQLitePlugin-WP
 
-### Cordova/Phonegap SQLite plugin for Windows Phone 8+
+### Apache Cordova/Phonegap SQLite plugin for Windows Phone 8+
 
-> This plugin is an HTML5 Web SQL polyfill for Windows Phone 8+ cordova applications.
+> This plugin is an HTML5 Web SQL polyfill for Windows Phone 8+ Apache Cordova applications.
 
 ## Featuers
 
@@ -35,32 +35,30 @@
 
 	* Support for transactional version changes via `db.changeVersion`.
 
-* Test suites
+* Tests and Examples ([Cordova-SQLitePlugin-WP-Examples](https://github.com/welldone-software/Cordova-SQLitePlugin-WP-Examples))
+ 
+ 	* Fully working example project using Apache Cordova command line
 
-	* All based on jasmine.
+ 	* Fully working example project using manual installation
 
-	* Unit tests - js only specs 
-
-	* Integraiton - e2e specs (js + native)
-
-	* Stress tests - (js + native)
+ 	* Extensive Jasmine 2.0 based test suite 
 
 
 ## Installation
 
-You can install the plugin using the cordova command line or manually.
+You can install the plugin using the Apache Cordova command line or manually.
 
-### Using the cordova command line 
+### Using the Cordova command line 
 
-Assuming you have installed the cordova cli and created a wp8 project, cd to its root and execute:
+Assuming you have installed the Apache Cordova cli, created a cordova project and added the `wp8` platform (see [Apache Cordova command-line interface docs](http://cordova.apache.org/docs/en/3.3.0/guide_cli_index.md.html)), cd to the Cordova project root and run:
 
 ```bash
 cordvova plugins add Cordova-SQLitePlugin-WP
-```
+``` 
 
 ### Manual installation
 
-1. Create a cordova wp8 project using the templates or Visual Studio wizards.
+1. Create a Cordova wp8 Visual Studio project using the wizard (see [Apache Cordova's Windows Phone 8 Platform Guide](http://cordova.apache.org/docs/en/3.3.0/guide_platforms_wp8_index.md.html)).
 
 1. Clone this repository or download a ziped vesrion and unzip it.
 
@@ -107,4 +105,28 @@ it('sould allow crud and database managment scripts', function (done) {
         });
     });
 });
+```
+
+## License
+
+```
+Copyright (c) 2014 Welldone Software Solutions Ltd.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 ```
