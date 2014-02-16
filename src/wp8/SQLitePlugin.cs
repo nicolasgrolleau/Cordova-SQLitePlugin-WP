@@ -1,35 +1,48 @@
-﻿using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Windows;
+﻿//
+// Copyright (c) 2014 Welldone Software Solutions Ltd.
+// 
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+using System;
 using System.Collections.Generic;
-using System.Windows.Media;
-using Windows.Storage.Streams;
-using Microsoft.Phone.Scheduler;
+using System.Diagnostics;
+using System.IO.IsolatedStorage;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using SQLite;
-using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
-using System.Collections.ObjectModel;
 using WPCordovaClassLib.Cordova;
 using WPCordovaClassLib.Cordova.Commands;
-using WPCordovaClassLib.Cordova.JSON;
-using System.IO;
-using Windows.Storage;
-using System.Text.RegularExpressions;
-using System.IO.IsolatedStorage;
 
 namespace Cordova.Extension.Commands
 {
     /// <summary>
-    /// Implementes access to SQLite DB
+    ///     Implementes access to SQLite DB
     /// </summary>
     public class SQLitePlugin : BaseCommand
     {
+        private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver()
+        };
+
         private readonly IDictionary<string, SQLiteConnection> _connections = new Dictionary<string, SQLiteConnection>();
 
         public void open(string json)
@@ -60,7 +73,7 @@ namespace Cordova.Extension.Commands
                     }
                 }
 
-                int existingVersion = connection.CreateCommand("PRAGMA user_version;").ExecuteScalar<int>();
+                var existingVersion = connection.CreateCommand("PRAGMA user_version;").ExecuteScalar<int>();
 
                 if (reqeustedVersion.HasValue && existingVersion != reqeustedVersion)
                 {
@@ -70,8 +83,7 @@ namespace Cordova.Extension.Commands
 
                 _connections[args.Name] = connection;
 
-                DispatchSuccess(new { Version = existingVersion });
-
+                DispatchSuccess(new {Version = existingVersion});
             }
             catch (Exception e)
             {
@@ -81,7 +93,6 @@ namespace Cordova.Extension.Commands
                 }
                 DispatchError(connection, e);
             }
-
         }
 
         public void close(string json)
@@ -107,7 +118,6 @@ namespace Cordova.Extension.Commands
             {
                 DispatchError(connection, new Exception("Database '" + args.Name + "' is not open."));
             }
-
         }
 
         public void forceEndTransaction(string json)
@@ -134,7 +144,7 @@ namespace Cordova.Extension.Commands
                         {
                             connection.CreateCommand(string.Format("PRAGMA user_version = {0};", args.NewVersion.Value))
                                 .ExecuteNonQuery();
-                            int existingVersion = connection.CreateCommand("PRAGMA user_version;").ExecuteScalar<int>();
+                            var existingVersion = connection.CreateCommand("PRAGMA user_version;").ExecuteScalar<int>();
                             if (existingVersion != args.NewVersion)
                             {
                                 throw new Exception(string.Format("Could no set version to {0} for '{1}'. It is {2}",
@@ -170,7 +180,6 @@ namespace Cordova.Extension.Commands
 
         public void runBatch(string json)
         {
-            //Debug.WriteLine("runBatch " + json);
             SQLiteConnection connection = null;
 
             try
@@ -184,7 +193,7 @@ namespace Cordova.Extension.Commands
 
                 object resultSet = DoRunBatch(connection, args);
 
-                DispatchSuccess(new { resultSet, connection.IsInTransaction });
+                DispatchSuccess(new {resultSet, connection.IsInTransaction});
             }
             catch (Exception e)
             {
@@ -194,7 +203,6 @@ namespace Cordova.Extension.Commands
 
         private object DoRunBatch(SQLiteConnection connection, RunBatchArgs args)
         {
-            // Debug.WriteLine("DoRunBatch " + args.Name + );
             if (args.IsFirstBatch)
             {
                 if (connection.IsInTransaction)
@@ -205,7 +213,7 @@ namespace Cordova.Extension.Commands
 
                 if (args.RequiredVersion != null)
                 {
-                    int existingVersion = connection.CreateCommand("PRAGMA user_version;").ExecuteScalar<int>();
+                    var existingVersion = connection.CreateCommand("PRAGMA user_version;").ExecuteScalar<int>();
                     if (existingVersion != args.RequiredVersion)
                     {
                         throw new Exception(string.Format("Unexpected version {0} for '{1}' while requesting {2}",
@@ -214,7 +222,6 @@ namespace Cordova.Extension.Commands
                 }
 
                 connection.BeginTransaction();
-
             }
 
             if (!connection.IsInTransaction)
@@ -223,21 +230,20 @@ namespace Cordova.Extension.Commands
             }
 
             object resultSet = null;
+            SqlStatement lastStatement = args.Statements.Last();
 
-            foreach (SqlStatement rawStatement in args.Statements)
+            foreach (SqlStatement statement in args.Statements)
             {
-                bool lastRaw = rawStatement == args.Statements.Last();
-                SqlStatement[] statementsToRun = getStatementsToRun(rawStatement);
-
-                foreach (SqlStatement statement in statementsToRun)
-                {
-                    bool lastStatement = lastRaw && statement == statementsToRun.Last();
 
                     try
                     {
-                        var rows = connection.Query2(statement.Sql, statement.Args ?? new object[] {});
+                        List<SQLiteQueryRow> rows = null;
+                        if (!CheckAndRunDropTableWorkArroung(statement, connection))
+                        {
+                            rows = connection.Query2(statement.Sql, statement.Args ?? new object[] { });
+                        }
 
-                        if (lastStatement)
+                        if (statement == lastStatement)
                         {
                             resultSet =
                                 new
@@ -250,14 +256,14 @@ namespace Cordova.Extension.Commands
                     }
                     catch (Exception e)
                     {
-                        if (lastStatement || !args.MayRecoverFromError)
+                        if (statement != lastStatement || !args.MayRecoverFromError)
                         {
                             connection.Rollback(); //todo: protect from rollback error
                         }
-                        throw e;
+                        throw;
                     }
                 }
-            }
+            
 
             if (!args.MayNotBeLastBatch)
             {
@@ -267,89 +273,45 @@ namespace Cordova.Extension.Commands
             return resultSet;
         }
 
-        private SqlStatement[] getStatementsToRun(SqlStatement statement)
+        private bool CheckAndRunDropTableWorkArroung(SqlStatement statement, SQLiteConnection connection)
         {
-            return dropTableWorkAround(statement);
+            var stmts = SplitDropTableStatment(statement);
+            if (stmts != null)
+            {
+                foreach (var stmt in stmts)
+                {
+                    connection.Query2(stmt.Sql, stmt.Args ?? new object[] { });
+                }
+            }
+            return stmts != null;
         }
 
-        private SqlStatement[] dropTableWorkAround(SqlStatement statement)
+        private IEnumerable<SqlStatement> SplitDropTableStatment(SqlStatement statement)
         {
-            Match match = Regex.Match(statement.Sql, @"^DROP\s+TABLE\s+(IF\s+EXISTS\s+|)(\S+)", RegexOptions.IgnoreCase);
+            Match match = Regex.Match(statement.Sql, @"^\s*DROP\s+TABLE\s+(?<IfExists>IF\s+EXISTS\s+)?(?<TableName>\S+)", RegexOptions.IgnoreCase);
             if (!match.Success)
             {
-                return new SqlStatement[]{statement};
+                return null;
             }
 
-            bool ifExists = (match.Groups[1].Value != "");
-            string tableName = match.Groups[2].Value;
-            var nowMilliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
+            var statements = new List<SqlStatement>();
+            var tableName = match.Groups["TableName"].Value;
 
-            List<SqlStatement> statements = new List<SqlStatement>();
-            if (ifExists)
+            if (match.Groups["IfExists"].Success)
             {
-                statements.Add(new SqlStatement(string.Format("CREATE TABLE IF NOT EXISTS {0} (x INTEGER)", tableName)));
+                statements.Add(new SqlStatement{Sql = string.Format("CREATE TABLE IF NOT EXISTS {0} (x INTEGER)", tableName)});
             }
 
-            statements.Add(new SqlStatement(string.Format("DELETE FROM {0}", tableName)));
-            statements.Add(new SqlStatement(string.Format("ALTER TABLE {0} RENAME TO _DEL_TABLE_{0}_{1}", tableName, nowMilliseconds)));
+            statements.Add(new SqlStatement{Sql = string.Format("DELETE FROM {0}", tableName)});
+            statements.Add(
+                new SqlStatement{Sql = string.Format("ALTER TABLE {0} RENAME TO _DEL_{1}", tableName, DateTime.Now.Ticks)});
 
-            return statements.ToArray();
+            return statements;
         }
-
-        private class OpenArgs
-        {
-            public string Name { get; set; }
-            public int? Version { get; set; }
-        }
-
-        private class EndTransactionArgs
-        {
-            public string Name { get; set; }
-            public bool IsCommit { get; set; }
-            public int? NewVersion { get; set; }
-        }
-
-        private class CloseArgs
-        {
-            public string Name { get; set; }
-        }
-
-        private class RunBatchArgs
-        {
-            public string Name { get; set; }
-            public bool IsFirstBatch { get; set; }
-            public int? RequiredVersion { get; set; }
-            public bool MayRecoverFromError { get; set; }
-            public bool MayNotBeLastBatch { get; set; }
-            public string TransactionId { get; set; }
-
-            //public List<SqlStatement> Statements { get; set; }
-            public SqlStatement[] Statements { get; set; }
-
-            //public double? ExpectedSize { get; set; }
-            //public string DisplayName { get; set; }
-        }
-
-        public class SqlStatement
-        {
-            public SqlStatement(string Sql)
-            {
-                this.Sql = Sql;
-            }
-
-            public string Sql { get; set; }
-            public object[] Args { get; set; }
-        }
-
-        private static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings
-        {
-            ContractResolver = new CamelCasePropertyNamesContractResolver()
-        };
 
         private T GetArgument<T>(string json)
         {
-            var str = JsonConvert.DeserializeObject<string[]>(json)[0];
-            Debug.WriteLine(json);
+            string str = JsonConvert.DeserializeObject<string[]>(json)[0];
             return JsonConvert.DeserializeObject<T>(str, JsonSettings);
         }
 
@@ -387,6 +349,41 @@ namespace Cordova.Extension.Commands
             bool isInTransaction = hasDatabase && connection.IsInTransaction;
             //todo: log the error with stack
             DispatchError(e, isInTransaction, hasDatabase);
+        }
+
+        private class CloseArgs
+        {
+            public string Name { get; set; }
+        }
+
+        private class EndTransactionArgs
+        {
+            public string Name { get; set; }
+            public bool IsCommit { get; set; }
+            public int? NewVersion { get; set; }
+        }
+
+        private class OpenArgs
+        {
+            public string Name { get; set; }
+            public int? Version { get; set; }
+        }
+
+        private class RunBatchArgs
+        {
+            public string Name { get; set; }
+            public bool IsFirstBatch { get; set; }
+            public int? RequiredVersion { get; set; }
+            public bool MayRecoverFromError { get; set; }
+            public bool MayNotBeLastBatch { get; set; }
+            public string TransactionId { get; set; }
+            public SqlStatement[] Statements { get; set; }
+        }
+
+        public class SqlStatement
+        {
+            public string Sql { get; set; }
+            public object[] Args { get; set; }
         }
     }
 }
