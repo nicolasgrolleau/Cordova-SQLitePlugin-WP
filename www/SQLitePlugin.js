@@ -14,8 +14,6 @@
                 var valid = typeof(versionStr) == 'string'
                     && (versionStr === '' || versionStr === '0.0' || /^[1-9][0-9]{0,3}\.[0-9][1-9]?$/.test(versionStr));
 
-                //console.log(typeof(versionStr) + ' - ' + versionStr + ' - ' + valid);
-
                 return valid;
             },
             parse: function (versionStr) {
@@ -146,7 +144,7 @@
     };
 
     Database.prototype.runPending = function () {
-        console.log('runPending called while ' + ((this.runningTransaction && this.runningTransaction.id) || 'nothig') + ' in progress');
+
         if (this.runningTransaction) {
             return;
         }
@@ -291,8 +289,6 @@
                     }
                 }.bind(this);
 
-            console.log('args: '+JSON.stringify(args));
-
             serializedExec("forceEndTransaction", args,
                 function(result) {
                     updateVersion();
@@ -331,12 +327,10 @@
 
         serializedExec('open', {name: name, version: VersionFormat.parse(requestedVersion)},
             function (info) {
-                //console.log('return info for ' + name + ' - ' + JSON.stringify(info));
-
                 var db = new Database(name, VersionFormat.format(info.version) /*, displayName, maxSize*/);
 
                 Database.availableDatabases[name] = db;
-                //console.log(db);
+
                 successCallback(db.externalInterface);
             },
             function (err) {
@@ -347,10 +341,3 @@
     };
 
 })();
-/*
- We allow each database to have a single database at any given time. If open is called multiple times and no close is called we return the same db object.
- If db or tx api is called after a db is closed, it is an error.
-
- When the db is availableDatabases, nothign happens. We wait for the first transaction to
-
- */

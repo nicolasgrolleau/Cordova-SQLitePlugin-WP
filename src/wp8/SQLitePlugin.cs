@@ -380,7 +380,7 @@ namespace Cordova.Extension.Commands
             public SqlStatement[] Statements { get; set; }
         }
 
-        public class SqlStatement
+        private class SqlStatement
         {
             public string Sql { get; set; }
             public object[] Args { get; set; }
