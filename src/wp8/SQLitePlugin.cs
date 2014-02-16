@@ -28,7 +28,7 @@ namespace Cordova.Extension.Commands
     /// <summary>
     /// Implementes access to SQLite DB
     /// </summary>
-    public class SQLitePlugin : BasePluginCommand
+    public class SQLitePlugin : BaseCommand
     {
         private readonly IDictionary<string, SQLiteConnection> _connections = new Dictionary<string, SQLiteConnection>();
 
